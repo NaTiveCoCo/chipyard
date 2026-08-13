@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Git 会给 hook 设置父仓库的环境变量；清掉后才能正确进入嵌套 submodule。
+unset GIT_DIR GIT_INDEX_FILE GIT_WORK_TREE
+
+# 仅在本次提交移动 BOOM pin 时校验，避免干扰普通 Chipyard 开发提交。
+git diff --cached --name-only | grep -qx 'generators/boom' || exit 0
+
+dirty=$(git -C generators/boom status --porcelain --untracked-files=no)
+if [ -n "$dirty" ]; then
+  echo "✗ Refusing to commit: moving the BOOM pin with uncommitted changes:"
+  echo "$dirty" | sed 's/^/      /'
+  echo "  Commit and push BOOM first so this pin describes the tested source."
+  echo "  Use git commit --no-verify only when intentionally bypassing this check."
+  exit 1
+fi
