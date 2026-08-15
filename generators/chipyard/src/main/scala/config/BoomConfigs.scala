@@ -20,6 +20,13 @@ class LargeBoomV3Config extends Config(
   new chipyard.config.WithSystemBusWidth(128) ++
   new chipyard.config.AbstractConfig)
 
+class NACCLargeBoomV3Config extends Config(
+  new freechips.rocketchip.subsystem.WithExtMemSize(BigInt(8) << 30) ++
+  new boom.v3.common.WithNACCBoom ++
+  new boom.v3.common.WithNLargeBooms(1) ++
+  new chipyard.config.WithSystemBusWidth(128) ++
+  new chipyard.config.AbstractConfig)
+
 class MegaBoomV3Config extends Config(
   new boom.v3.common.WithNMegaBooms(1) ++                           // mega boom config
   new chipyard.config.WithSystemBusWidth(128) ++
