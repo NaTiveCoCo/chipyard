@@ -5,7 +5,9 @@
 # Driver Sources & Flags #
 ##########################
 
-ifeq (,$(wildcard $(RISCV)/lib/libriscv.so))
+FIRESIM_DRIVER_RISCV ?= $(RISCV)
+
+ifeq (,$(wildcard $(FIRESIM_DRIVER_RISCV)/lib/libriscv.so))
 $(warning libriscv not found)
 LRISCV=
 else
@@ -29,15 +31,15 @@ DRIVER_CC += \
 		$(testchipip_csrc_dir)/testchip_htif.cc \
 		$(firechip_bridgestubs_lib_dir)/fesvr/firesim_tsi.cc \
 		$(firechip_bridgestubs_lib_dir)/fesvr/firesim_dtm.cc \
-		$(RISCV)/lib/libfesvr.a
+		$(FIRESIM_DRIVER_RISCV)/lib/libfesvr.a
 # Disable missing override warning for testchipip.
 TARGET_CXX_FLAGS += \
 		-isystem $(testchipip_csrc_dir) \
-		-isystem $(RISCV)/include \
+		-isystem $(FIRESIM_DRIVER_RISCV)/include \
 		-Wno-inconsistent-missing-override
 TARGET_LD_FLAGS += \
-		-L$(RISCV)/lib \
-		-Wl,-rpath,$(RISCV)/lib \
+		-L$(FIRESIM_DRIVER_RISCV)/lib \
+		-Wl,-rpath,$(FIRESIM_DRIVER_RISCV)/lib \
 		$(LRISCV)
 
 # top-level sources
