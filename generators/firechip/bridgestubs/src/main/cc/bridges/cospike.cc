@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <iostream>
 #include <limits.h>
+#include <stdexcept>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -17,6 +18,28 @@
 #define THROUGHPUT_TESTING
 
 char cospike_t::KIND;
+
+static std::vector<std::string> cospike_htif_args(
+    const std::vector<std::string> &args, uint32_t hartid) {
+  std::vector<std::string> normalized(args);
+  const std::string prefix = "+prog" + std::to_string(hartid) + "=";
+  bool found_program = false;
+
+  for (auto &arg : normalized) {
+    if (arg.rfind("+prog", 0) != 0)
+      continue;
+    if (arg.rfind(prefix, 0) != 0)
+      throw std::runtime_error("Cospike received a program argument for a different hart: " + arg);
+    if (found_program || arg.size() == prefix.size())
+      throw std::runtime_error("Cospike requires exactly one nonempty " + prefix + "<ELF> argument");
+    arg = arg.substr(prefix.size());
+    found_program = true;
+  }
+
+  if (!found_program)
+    throw std::runtime_error("Cospike requires exactly one " + prefix + "<ELF> argument");
+  return normalized;
+}
 
 /**
  * Constructor for cospike
@@ -46,7 +69,8 @@ cospike_t::cospike_t(simif_t &sim,
                      uint32_t hartid,
                      uint32_t stream_idx,
                      uint32_t stream_depth)
-    : streaming_bridge_driver_t(sim, stream, &KIND), args(args), _isa(isa),
+    : streaming_bridge_driver_t(sim, stream, &KIND),
+      args(cospike_htif_args(args, hartid)), _isa(isa),
       _priv(priv), _pmp_regions(pmp_regions), _maxpglevels(maxpglevels),
       _mem0_base(mem0_base), _mem0_size(mem0_size), _mem1_base(mem1_base),
       _mem1_size(mem1_size), _mem2_base(mem2_base), _mem2_size(mem2_size),
