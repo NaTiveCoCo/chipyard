@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+#
+# 在提交新的 NACC component pin 前，拒绝记录一个无法描述实际源码状态的 pin。
+# 仅检查本次暂存区移动对应 component 的情形，避免干扰普通 Chipyard 提交。
+set -euo pipefail
+
+# -----------------------------------------------------------------------------
+# 1. 隔离嵌套 submodule Git 命令的环境
+# -----------------------------------------------------------------------------
+# Git 会为 hook 设置 Chipyard 的 GIT_DIR、GIT_INDEX_FILE 和 GIT_WORK_TREE。
+# 若保留这些变量，下面的 git -C component 会误用 Chipyard 索引；配合
+# 严格模式可确保嵌套 submodule 命令出错时 fail-closed。
+unset GIT_DIR GIT_INDEX_FILE GIT_WORK_TREE
+
+# -----------------------------------------------------------------------------
+# 2. 仅检查本次提交移动的 NACC component pin
+# -----------------------------------------------------------------------------
+for component in generators/boom generators/rocket-chip; do
+  if ! git diff --cached --name-only | grep -Fqx "$component"; then
+    continue
+  fi
+
+  # 忽略未跟踪文件，允许本地构建产物存在；已跟踪文件的修改会使提交失败。
+  dirty=$(git -C "$component" status --porcelain --untracked-files=no)
+  if [ -n "$dirty" ]; then
+    echo "✗ Refusing to commit: moving the $component pin with uncommitted changes:"
+    echo "$dirty" | sed 's/^/      /'
+    echo "  Commit and push $component first so this pin describes the tested source."
+    echo "  Use git commit --no-verify only when intentionally bypassing this check."
+    exit 1
+  fi
+done

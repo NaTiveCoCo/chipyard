@@ -18,7 +18,7 @@ class TracedInstruction(traceBundleWidths: TraceBundleWidths) extends Bundle {
   val iaddr = UInt(traceBundleWidths.iaddrWidth.W)
   val insn = UInt(traceBundleWidths.insnWidth.W)
   val wdata = traceBundleWidths.wdataWidth.map { w => UInt(w.W) }
-  val priv = UInt(3.W)
+  val priv = UInt(4.W)
   val exception = Bool()
   val interrupt = Bool()
   val cause = UInt(traceBundleWidths.causeWidth.W)

@@ -1,0 +1,8 @@
+[push]
+	recurseSubmodules = on-demand
+[status]
+	submoduleSummary = true
+[diff]
+	submodule = log
+[core]
+	hooksPath = .githooks
