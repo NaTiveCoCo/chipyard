@@ -15,9 +15,10 @@ class MediumBoomV3Config extends Config(
   new boom.v3.common.WithNMediumBooms(1) ++                         // medium boom config
   new chipyard.config.AbstractConfig)
 
-// NACC 系统固定使用 8 GiB target DRAM，core 参数保持 stock Medium BOOM V3。
+// NACC uses 8 GiB target DRAM and 16 PMP entries with a Medium BOOM V3 core.
 class NACCMediumBoomV3Config extends Config(
   new freechips.rocketchip.subsystem.WithExtMemSize(BigInt(8) << 30) ++
+  new chipyard.config.WithNPMPs(16) ++
   new boom.v3.common.WithNACCBoom ++
   new boom.v3.common.WithNMediumBooms(1) ++
   new chipyard.config.AbstractConfig)
